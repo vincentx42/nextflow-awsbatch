@@ -23,6 +23,7 @@ process trim_galore {
 
     """
     trim_galore \
+        -j 10 \
         -q 20 \
         --phred33 \
         --fastqc \
@@ -30,7 +31,8 @@ process trim_galore {
         --length 20 \
         -e 0.1 \
         --paired ${fastq[0]} ${fastq[1]} \
-        --gzip
+        --gzip \
+        --fastqc
     """
 }
 
@@ -68,16 +70,16 @@ process hisat2 {
 process samtools {
     container 'nfcore/rnaseq:latest'
     queue 'nextflow_excess'
-    publishDir "${params.outdir}/mapping", mode: 'copy', pattern: "*.bam"
+    publishDir "${params.outdir}/mapping", mode: 'copy', pattern: "*_sorted.bam"
 
     input:
     tuple val(name), path("query.sam")
 
     output:
-    tuple val(name), path("${name}.bam")
+    tuple val(name), path("${name}_sorted.bam")
 
     """
-    samtools view -bS query.sam | samtools sort -o ${name}.bam
+    samtools view -bS query.sam | samtools sort -o ${name}_sorted.bam
     """
 }
 
@@ -107,7 +109,7 @@ process feature_counts {
 
 workflow {
     trim_galore(raw_reads)
-    hisat2(trim_galore.out, params.index)
+    hisat2(trim_galore.out, params.hisat2_index)
     samtools(hisat2.out.samfiles)
     feature_counts(samtools.out, params.annotation)
 }
