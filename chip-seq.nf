@@ -23,7 +23,7 @@ process trim_galore {
 
     """
     trim_galore \
-        -j 10 \
+        -j 8 \
         -q 20 \
         --phred33 \
         --fastqc \
@@ -31,8 +31,7 @@ process trim_galore {
         --length 20 \
         -e 0.1 \
         --paired ${fastq[0]} ${fastq[1]} \
-        --gzip \
-        --fastqc
+        --gzip
     """
 }
 
